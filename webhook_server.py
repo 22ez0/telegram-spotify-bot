@@ -85,6 +85,22 @@ async def main():
     
     logger.info("=== Iniciando sistema completo ===")
     
+    # Executa verificação de configuração
+    logger.info("Verificando configuração...")
+    import subprocess
+    try:
+        result = subprocess.run(
+            ["python", "check_render_config.py"],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        print(result.stdout)
+        if result.returncode != 0:
+            logger.warning("Verificação de configuração encontrou problemas")
+    except Exception as e:
+        logger.warning(f"Não foi possível executar verificação: {e}")
+    
     # Configura handlers de sinais para shutdown gracioso
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGTERM, signal.SIGINT):

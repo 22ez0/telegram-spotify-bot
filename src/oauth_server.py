@@ -49,6 +49,105 @@ def generate_auth_url(telegram_user_id: int) -> str:
     return f"{SPOTIFY_AUTH_URL}?{query_string}"
 
 
+@app.route("/")
+async def index():
+    """Página inicial com informações do servidor"""
+    from src.config import get_oauth_base_url, BOT_TOKEN
+    
+    base_url = get_oauth_base_url()
+    bot_configured = bool(BOT_TOKEN)
+    spotify_configured = bool(SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET)
+    
+    html = f"""
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Telegram Bot - Status</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; background: #f5f5f5; }}
+            .container {{ background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+            h1 {{ color: #0088cc; border-bottom: 2px solid #0088cc; padding-bottom: 10px; }}
+            h2 {{ color: #333; margin-top: 30px; }}
+            .status {{ padding: 10px; border-radius: 5px; margin: 10px 0; }}
+            .status.ok {{ background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }}
+            .status.warning {{ background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }}
+            .endpoint {{ background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 5px 0; font-family: monospace; }}
+            .code {{ background: #e9ecef; padding: 15px; border-radius: 5px; font-family: monospace; margin: 10px 0; }}
+            ul {{ line-height: 1.8; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🤖 Telegram Bot - Servidor OAuth</h1>
+            
+            <h2>📊 Status do Sistema</h2>
+            <div class="status {'ok' if bot_configured else 'warning'}">
+                {'✅' if bot_configured else '⚠️'} Bot do Telegram: {'Configurado' if bot_configured else 'Não configurado'}
+            </div>
+            <div class="status {'ok' if spotify_configured else 'warning'}">
+                {'✅' if spotify_configured else '⚠️'} Spotify OAuth: {'Configurado' if spotify_configured else 'Não configurado'}
+            </div>
+            
+            <h2>🌐 URL Base Detectada</h2>
+            <div class="code">{base_url}</div>
+            
+            <h2>📍 Endpoints Disponíveis</h2>
+            <div class="endpoint">📡 Webhook: {base_url}/webhook</div>
+            <div class="endpoint">🎵 Spotify Auth: {base_url}/auth/spotify?user_id=USER_ID</div>
+            <div class="endpoint">✅ Callback: {base_url}/callback/spotify</div>
+            <div class="endpoint">💚 Health: {base_url}/health</div>
+            
+            <h2>🎵 Configuração do Spotify</h2>
+            <p>Para que o OAuth do Spotify funcione, adicione esta URL no Spotify Developer Dashboard:</p>
+            <div class="code">{base_url}/callback/spotify</div>
+            
+            <h3>Passo a passo:</h3>
+            <ol>
+                <li>Acesse <a href="https://developer.spotify.com/dashboard" target="_blank">developer.spotify.com/dashboard</a></li>
+                <li>Selecione seu app</li>
+                <li>Clique em "Edit Settings"</li>
+                <li>No campo "Redirect URIs", cole a URL acima</li>
+                <li>Clique em "Save"</li>
+            </ol>
+            
+            <h2>🔧 Variáveis de Ambiente Necessárias</h2>
+            <ul>
+                <li><strong>BOT_TOKEN</strong> - Token do bot (obrigatório)</li>
+                <li><strong>SPOTIFY_CLIENT_ID</strong> - Client ID do Spotify</li>
+                <li><strong>SPOTIFY_CLIENT_SECRET</strong> - Client Secret do Spotify</li>
+                <li><strong>OPENAI_API_KEY</strong> - Para geração de imagens (opcional)</li>
+                <li><strong>GOOGLE_API_KEY</strong> - Para pesquisa web (opcional)</li>
+            </ul>
+            
+            <p style="margin-top: 30px; color: #666; text-align: center;">
+                Bot desenvolvido para Telegram • Integração Spotify • Moderação de grupos
+            </p>
+        </div>
+    </body>
+    </html>
+    """
+    return html
+
+
+@app.route("/health")
+async def health_check():
+    """Health check endpoint para monitoramento"""
+    from src.config import get_oauth_base_url, BOT_TOKEN
+    
+    return jsonify({
+        "status": "healthy",
+        "bot_configured": bool(BOT_TOKEN),
+        "spotify_configured": bool(SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET),
+        "base_url": get_oauth_base_url(),
+        "endpoints": {
+            "webhook": "/webhook",
+            "spotify_auth": "/auth/spotify",
+            "spotify_callback": "/callback/spotify",
+            "health": "/health"
+        }
+    })
+
+
 @app.route("/auth/spotify")
 async def spotify_auth():
     """Redireciona usuário para autorização do Spotify"""
