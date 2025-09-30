@@ -148,6 +148,31 @@ async def health_check():
     })
 
 
+@app.route("/debug/spotify")
+async def debug_spotify():
+    """Debug endpoint para verificar configuração do Spotify"""
+    from src.config import get_oauth_base_url
+    
+    return jsonify({
+        "spotify_client_id": SPOTIFY_CLIENT_ID[:20] + "..." if SPOTIFY_CLIENT_ID else "NOT SET",
+        "spotify_client_secret_set": bool(SPOTIFY_CLIENT_SECRET),
+        "spotify_redirect_uri": SPOTIFY_REDIRECT_URI,
+        "base_url": get_oauth_base_url(),
+        "expected_redirect_uri": f"{get_oauth_base_url()}/callback/spotify",
+        "match": SPOTIFY_REDIRECT_URI == f"{get_oauth_base_url()}/callback/spotify",
+        "scopes": SPOTIFY_SCOPES,
+        "test_auth_url": f"/auth/spotify?user_id=123456789",
+        "instructions": [
+            "1. Copie o 'spotify_redirect_uri' exato acima",
+            "2. Acesse https://developer.spotify.com/dashboard",
+            "3. Selecione seu app > Edit Settings",
+            "4. Cole a URI em 'Redirect URIs'",
+            "5. Clique ADD e depois SAVE",
+            "6. Aguarde 1-2 minutos para propagar"
+        ]
+    })
+
+
 @app.route("/auth/spotify")
 async def spotify_auth():
     """Redireciona usuário para autorização do Spotify"""
