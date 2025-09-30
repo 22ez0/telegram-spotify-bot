@@ -22,6 +22,7 @@ app = Quart(__name__)
 
 # Telegram bot application (será inicializado depois)
 bot_application = None
+webhook_secret_token = None
 
 pending_auth_states: Dict[str, int] = {}
 
@@ -259,10 +260,16 @@ async def root():
 
 @app.route("/webhook", methods=["POST"])
 async def telegram_webhook():
-    """Recebe atualizações do Telegram via webhook"""
+    """Recebe atualizações do Telegram via webhook com validação de segurança"""
     if not bot_application:
         logger.error("Bot application não inicializado!")
         return jsonify({"error": "Bot not initialized"}), 500
+    
+    # Valida token secreto do Telegram
+    telegram_secret = request.headers.get("X-Telegram-Bot-Api-Secret-Token")
+    if webhook_secret_token and telegram_secret != webhook_secret_token:
+        logger.warning(f"Tentativa de acesso não autorizado ao webhook")
+        return jsonify({"error": "Unauthorized"}), 401
     
     try:
         json_data = await request.get_json()
@@ -274,11 +281,14 @@ async def telegram_webhook():
         return jsonify({"error": str(e)}), 500
 
 
-def set_bot_application(application):
+def set_bot_application(application, secret_token=None):
     """Define a aplicação do bot para o servidor"""
-    global bot_application
+    global bot_application, webhook_secret_token
     bot_application = application
+    webhook_secret_token = secret_token
     logger.info("Bot application configurado no servidor web")
+    if secret_token:
+        logger.info("🔒 Validação de webhook ativada")
 
 
 def run_oauth_server():
