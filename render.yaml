@@ -1,28 +1,10 @@
 services:
-  # Servidor OAuth do Spotify (Web Service)
   - type: web
-    name: spotify-oauth-server
+    name: telegram-bot-complete
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: python run_oauth.py
-    envVars:
-      - key: SPOTIFY_CLIENT_ID
-        sync: false
-      - key: SPOTIFY_CLIENT_SECRET
-        sync: false
-      - key: SPOTIFY_REDIRECT_URI
-        sync: false
-      - key: BOT_TOKEN
-        sync: false
-
-  # Bot do Telegram (Background Worker)
-  - type: worker
-    name: telegram-bot
-    runtime: python
-    plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: python main.py
+    startCommand: python start.py
     envVars:
       - key: BOT_TOKEN
         sync: false
