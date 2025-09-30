@@ -1,0 +1,21 @@
+start - Iniciar o bot e ver comandos disponíveis
+ajuda - Manual completo de comandos e funcionalidades
+info - Ver informações do usuário (seu perfil ou de outro)
+chatinfo - Ver informações completas do grupo
+id - Ver seu ID e ID do chat
+ban - Banir usuário permanentemente do grupo
+kick - Remover usuário do grupo
+mute - Silenciar usuário temporariamente
+unmute - Remover silenciamento de usuário
+unban - Remover banimento de usuário
+nuke - Deletar todo o histórico do grupo
+purge - Remover mensagens específicas de um usuário
+configuracoes - Abrir painel de configurações do grupo
+rank - Ver sua posição no ranking do grupo
+gerarimagem - Gerar imagem usando inteligência artificial
+pesquisar - Buscar informações na web
+perguntar - Fazer perguntas à inteligência artificial
+osint - Menu completo de recursos OSINT Brazuca
+cpf - Consulta de CPF via Receita Federal
+cnpj - Consulta de CNPJ e informações empresariais
+processos - Consulta de processos judiciais
