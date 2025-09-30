@@ -7,6 +7,8 @@ import logging
 import asyncio
 import signal
 import secrets
+from hypercorn.asyncio import serve
+from hypercorn.config import Config
 from src.bot import create_application
 from src.oauth_server import app, set_bot_application
 from src.config import get_oauth_base_url
@@ -20,6 +22,7 @@ logger = logging.getLogger(__name__)
 # Token secreto para validação de webhooks
 WEBHOOK_SECRET_TOKEN = os.getenv('WEBHOOK_SECRET_TOKEN') or secrets.token_urlsafe(32)
 bot_app = None
+shutdown_event = asyncio.Event()
 
 
 async def setup_webhook(bot_app):
@@ -57,6 +60,9 @@ async def shutdown(signal_name=None):
         logger.info(f"Recebido sinal {signal_name}, encerrando...")
     else:
         logger.info("Encerrando servidor...")
+    
+    # Sinaliza para parar o servidor
+    shutdown_event.set()
     
     if bot_app:
         try:
@@ -105,11 +111,17 @@ async def main():
         
         # Obtém porta do ambiente (Render usa PORT)
         port = int(os.environ.get('PORT', 5000))
+        
+        # Configura Hypercorn
+        config = Config()
+        config.bind = [f"0.0.0.0:{port}"]
+        config.graceful_timeout = 30
+        
         logger.info(f"✅ Servidor pronto na porta {port}")
         logger.info("✅ Bot configurado e aguardando webhooks")
         
-        # Roda servidor Quart
-        await app.run_task(host="0.0.0.0", port=port)
+        # Roda servidor com shutdown event
+        await serve(app, config, shutdown_trigger=shutdown_event.wait)
         
     except Exception as e:
         logger.error(f"Erro fatal: {e}")
