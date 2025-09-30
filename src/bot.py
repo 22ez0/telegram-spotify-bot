@@ -143,11 +143,11 @@ async def post_init(application: Application) -> None:
     logger.info("Banco de dados inicializado com sucesso!")
 
 
-def main() -> None:
-    """Função principal"""
+def create_application() -> Application:
+    """Cria e configura a aplicação do bot"""
     if not BOT_TOKEN:
         logger.error("BOT_TOKEN não configurado! Configure a variável de ambiente BOT_TOKEN.")
-        return
+        raise ValueError("BOT_TOKEN não configurado")
     
     # Cria aplicação
     application = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
@@ -178,10 +178,15 @@ def main() -> None:
     logger.info("Registrando handlers do Spotify...")
     register_spotify_handlers(application)
     
-    logger.info("Bot iniciado com sucesso!")
-    logger.info("Aguardando mensagens...")
+    logger.info("Bot configurado com sucesso!")
     
-    # Inicia polling
+    return application
+
+
+def main() -> None:
+    """Função principal (para compatibilidade)"""
+    application = create_application()
+    logger.info("Iniciando bot em modo polling...")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 

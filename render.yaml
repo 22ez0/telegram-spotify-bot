@@ -4,7 +4,7 @@ services:
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: python start.py
+    startCommand: python webhook_server.py
     envVars:
       - key: BOT_TOKEN
         sync: false

@@ -1,5 +1,6 @@
 """
 Servidor OAuth para autenticação Spotify por usuário
+Agora também inclui webhook do Telegram
 """
 import logging
 import os
@@ -10,6 +11,7 @@ from typing import Dict, Optional
 import aiohttp
 from quart import Quart, request, redirect, jsonify
 from sqlalchemy import select
+from telegram import Update
 from src.config import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI
 from src.database.db import db
 from src.database.models import SpotifyAccount, User
@@ -17,6 +19,9 @@ from src.database.models import SpotifyAccount, User
 logger = logging.getLogger(__name__)
 
 app = Quart(__name__)
+
+# Telegram bot application (será inicializado depois)
+bot_application = None
 
 pending_auth_states: Dict[str, int] = {}
 
@@ -235,6 +240,45 @@ async def get_user_access_token(user_id: int) -> Optional[str]:
 async def health():
     """Health check endpoint"""
     return jsonify({"status": "ok"})
+
+
+@app.route("/")
+async def root():
+    """Root endpoint para Render detectar a porta"""
+    return jsonify({
+        "status": "running",
+        "service": "Telegram Bot & Spotify OAuth Server",
+        "endpoints": {
+            "health": "/health",
+            "webhook": "/webhook",
+            "spotify_auth": "/auth/spotify",
+            "spotify_callback": "/callback/spotify"
+        }
+    })
+
+
+@app.route("/webhook", methods=["POST"])
+async def telegram_webhook():
+    """Recebe atualizações do Telegram via webhook"""
+    if not bot_application:
+        logger.error("Bot application não inicializado!")
+        return jsonify({"error": "Bot not initialized"}), 500
+    
+    try:
+        json_data = await request.get_json()
+        update = Update.de_json(json_data, bot_application.bot)
+        await bot_application.update_queue.put(update)
+        return jsonify({"ok": True})
+    except Exception as e:
+        logger.error(f"Erro ao processar webhook: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+def set_bot_application(application):
+    """Define a aplicação do bot para o servidor"""
+    global bot_application
+    bot_application = application
+    logger.info("Bot application configurado no servidor web")
 
 
 def run_oauth_server():
