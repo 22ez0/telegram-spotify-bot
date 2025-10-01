@@ -116,6 +116,22 @@ async def main():
         
         logger.info("Inicializando bot application...")
         await bot_app.initialize()
+        
+        # Inicializa banco de dados
+        logger.info("=" * 60)
+        logger.info("🔧 INICIALIZANDO BANCO DE DADOS...")
+        from src.database.db import db
+        from src.config import DATABASE_URL
+        logger.info(f"📍 DATABASE_URL: {DATABASE_URL.split('@')[0] if '@' in DATABASE_URL else DATABASE_URL[:50]}...")
+        try:
+            await db.init_db()
+            logger.info("✅ Banco de dados inicializado com sucesso!")
+            logger.info("✅ Todas as tabelas foram criadas/verificadas!")
+        except Exception as e:
+            logger.error(f"❌ ERRO ao inicializar banco de dados: {e}")
+            raise
+        logger.info("=" * 60)
+        
         await bot_app.start()
         
         # Configura webhook
