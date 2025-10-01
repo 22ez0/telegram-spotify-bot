@@ -138,9 +138,20 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 async def post_init(application: Application) -> None:
     """Inicialização pós-startup"""
-    logger.info("Inicializando banco de dados...")
-    await db.init_db()
-    logger.info("Banco de dados inicializado com sucesso!")
+    logger.info("=" * 60)
+    logger.info("🔧 INICIALIZANDO BANCO DE DADOS...")
+    logger.info(f"📍 DATABASE_URL configurada: {str(db.engine.url).split('@')[0]}@...")
+    
+    try:
+        await db.init_db()
+        logger.info("✅ Banco de dados inicializado com sucesso!")
+        logger.info("✅ Todas as tabelas foram criadas/verificadas!")
+        logger.info("=" * 60)
+    except Exception as e:
+        logger.error("=" * 60)
+        logger.error(f"❌ ERRO ao inicializar banco de dados: {e}")
+        logger.error("=" * 60)
+        raise
 
 
 def create_application() -> Application:
