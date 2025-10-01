@@ -10,8 +10,10 @@ load_dotenv()
 # Token do Bot
 BOT_TOKEN: Final[str] = os.getenv("BOT_TOKEN", "")
 
-# Database - Usa SQLite por padrão para simplicidade
-DATABASE_URL: Final[str] = "sqlite+aiosqlite:///bot.db"
+# Database - Suporta PostgreSQL e SQLite
+# No Render/produção: usa DATABASE_URL da variável de ambiente (PostgreSQL)
+# No desenvolvimento: usa SQLite por padrão
+DATABASE_URL: Final[str] = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///bot.db")
 
 # API Keys (Opcionais)
 OPENAI_API_KEY: Final[str] = os.getenv("OPENAI_API_KEY", "")
