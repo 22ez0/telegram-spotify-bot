@@ -4,7 +4,10 @@ Gerenciamento de conexão com banco de dados
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy import select
-from src.database.models import Base, User, Group, GroupUser, ModerationLog
+from src.database.models import (
+    Base, User, Group, GroupUser, ModerationLog, 
+    SpotifyAccount, SpotifyTrack, UserFriend, UserSettings, ArtistCrown
+)
 from src.config import DATABASE_URL
 
 
